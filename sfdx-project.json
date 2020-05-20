@@ -7,6 +7,10 @@
       {
         "path": "sfdx-source/unpackaged",
         "default": false
+      },
+      {
+        "path": "sfdx-source/untracked",
+        "default": false
       }
     ],
     "namespace": "",
