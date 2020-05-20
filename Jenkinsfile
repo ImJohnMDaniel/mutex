@@ -1,4 +1,4 @@
 #!groovy
 @Library('sfdx-core-ci-lib')
 import SfdxProjectBuilder
-new SfdxProjectBuilder(this).execute()
+new SfdxProjectBuilder(this).setSlackNotificationsOff().execute()
