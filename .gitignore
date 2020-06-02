@@ -15,7 +15,8 @@ build.properties
 
 # SFDX Related
 .sfdx/
-sfdx-source/untracked/
+sfdx-source/untracked/*
+!sfdx-source/untracked/README.md
 .execanon
 
 # NPM Related

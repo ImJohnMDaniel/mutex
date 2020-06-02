@@ -1,0 +1,1 @@
+Use this space to work with temporary files that should not be stored in the project
