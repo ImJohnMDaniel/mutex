@@ -1,12 +1,12 @@
 {
     "packageDirectories": [
       {
-        "path": "sfdx-source/mutex",
-        "default": true
-      },
-      {
         "path": "sfdx-source/unpackaged",
         "default": false
+      },
+      {
+        "path": "sfdx-source/mutex",
+        "default": true
       },
       {
         "path": "sfdx-source/untracked",
