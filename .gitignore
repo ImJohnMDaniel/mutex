@@ -15,6 +15,7 @@ build.properties
 
 # SFDX Related
 .sfdx/
+.sf/
 sfdx-source/untracked/*
 !sfdx-source/untracked/README.md
 .execanon
