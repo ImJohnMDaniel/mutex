@@ -23,6 +23,10 @@ public with sharing class MutexTestDummyBatchable
      */
     public void finish(Database.BatchableContext bc)
     {
-        MutexService.turnMutexOff( MUTEX_JOB_ID_DUMMY_BATCH );
+        // Query here to see if there are other records to process
+        // If there are still records to process, then execute...
+            // MutexService.turnMutexOn( MUTEX_JOB_ID_DUMMY_BATCH );
+        // otherwise
+            MutexService.turnMutexOff( MUTEX_JOB_ID_DUMMY_BATCH );
     }
 }
