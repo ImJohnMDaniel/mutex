@@ -1,19 +1,19 @@
 {
     "packageDirectories": [
       {
-        "path": "sfdx-source/unpackaged",
+        "path": "sfdx-source/prerequisite",
         "default": false
       },
       {
         "path": "sfdx-source/mutex",
-        "default": true
+        "default": false
       },
       {
         "path": "sfdx-source/untracked",
-        "default": false
+        "default": true
       }
     ],
     "namespace": "",
     "sfdcLoginUrl": "https://login.salesforce.com",
-    "sourceApiVersion": "48.0"
+    "sourceApiVersion": "55.0"
   }
