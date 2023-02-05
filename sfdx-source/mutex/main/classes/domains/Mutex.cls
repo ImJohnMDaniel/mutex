@@ -117,8 +117,8 @@ public with sharing class Mutex
 				
 					if ( classType.newInstance() instanceof Queueable & ! System.isQueueable() )
 					{
-						Queueable batchName = (Queueable)classType.newInstance();
-						System.enqueueJob(batchName);
+						Queueable queueableInstance = (Queueable)classType.newInstance();
+						System.enqueueJob(queueableInstance);
 					} 
 					else if (classType.newInstance() instanceof Database.Batchable<sObject>) 
 					{
