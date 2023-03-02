@@ -8,7 +8,7 @@ public inherited sharing class MutexServiceImpl
             return;
         }
 
-        fflib_ISObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(new List<Schema.SObjectType> { Mutex__c.sObjectType });
+        IApplicationSObjectUnitOfWork uow = new ApplicationSObjectUnitOfWork(new List<Schema.SObjectType> { Mutex__c.sObjectType });
 
         IMutex mutexDomain = Mutex.newInstance( selectByJobName( new List<String>{ jobName }) );
 
@@ -24,7 +24,7 @@ public inherited sharing class MutexServiceImpl
             return;
         }
 
-        fflib_ISObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(new List<Schema.SObjectType> { Mutex__c.sObjectType });
+        IApplicationSObjectUnitOfWork uow = new ApplicationSObjectUnitOfWork(new List<Schema.SObjectType> { Mutex__c.sObjectType });
 
         IMutex mutexDomain = Mutex.newInstance( selectByJobName( new List<String>{ jobName }) );
 
@@ -33,41 +33,41 @@ public inherited sharing class MutexServiceImpl
         uow.commitWork();
     }
 
-    public void setupMutexForJob( String jobName, System.Type asyncClassToRun )
+    public void setupMutexForJob( MutexServiceParameters params )
     {
-        setupMutexForJob(jobName, asyncClassToRun, null);
-    }
-
-    public void setupMutexForJob( String jobName, System.Type asyncClassToRun, Integer batchSize )
-    {
-        if ( String.isBlank(jobName) || asyncClassToRun == null )
+        if ( String.isBlank(params.jobName) || params.asyncClassToRun == null )
         {
             return;
         }
 
-        fflib_ISObjectUnitOfWork uow = new fflib_SObjectUnitOfWork(new List<Schema.SObjectType> { Mutex__c.sObjectType });
+        IApplicationSObjectUnitOfWork uow = new ApplicationSObjectUnitOfWork(new List<Schema.SObjectType> { Mutex__c.sObjectType });
 
         Mutex__c rec = new Mutex__c();
 
-        rec.AsyncClassName__c = asyncClassToRun.getName();
-        rec.JobId__c = jobName;
+        rec.AsyncClassName__c = params.asyncClassToRun.getName();
+        rec.JobId__c = params.jobName;
         rec.JobStatus__c = Mutex.STATUS_CODES.INACTIVE.name();
 
-        if (batchSize != null)
+        if (params.batchSize != null)
         {
-            rec.BatchSize__c = batchSize;
+            rec.BatchSize__c = params.batchSize;
         }
         
+        if (params.initializationParameters != null)
+        {
+            rec.ParametersSerialized__c = JSON.serialize(params.initializationParameters);
+        }
+
         uow.registerNew(rec);
 
         uow.commitWork();
     }
 
-    public void setupMutexForJobIfNeeded( String jobName, System.Type asyncClassToRun, Integer batchSize )
+    public void setupMutexForJobIfNeeded( MutexServiceParameters params )
     {
-        if (selectByJobName(new List<String>{jobName}).isEmpty())
+        if (selectByJobName(new List<String>{params.jobName}).isEmpty())
         {
-            setupMutexForJob(jobName, asyncClassToRun, batchSize);
+            setupMutexForJob(params);
         }
     }
 
@@ -75,7 +75,7 @@ public inherited sharing class MutexServiceImpl
     private static List<Mutex__c> selectByJobName(List<String> jobNames)
     {
         return jobNames != null 
-                ? [select Id, Name, JobId__c, AsyncClassName__c, JobStatus__c from Mutex__c where JobId__c in :jobNames] 
+                ? [select Id, Name, JobId__c, AsyncClassName__c, JobStatus__c, ParametersSerialized__c from Mutex__c where JobId__c in :jobNames] 
                 : new List<Mutex__c>();
     }
 }

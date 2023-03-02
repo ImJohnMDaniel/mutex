@@ -6,7 +6,9 @@ private class MutexTest {
     {
         String jobName = MutexTestDummyQueueable.MUTEX_JOB_ID_DUMMY_QUEUEABLE;
 
-        MutexService.setupMutexForJob( jobName, MutexTestDummyQueueable.class );
+        MutexService.setupMutexForJob( new MutexServiceParameters()
+                                            .setAsyncClassToRun(MutexTestDummyQueueable.class)
+                                            .setJobName(jobName) );
         
         Test.startTest();
         
@@ -25,7 +27,10 @@ private class MutexTest {
     {
         String jobName = MutexTestDummyBatchable.MUTEX_JOB_ID_DUMMY_BATCH;
 
-        MutexService.setupMutexForJob( jobName, MutexTestDummyBatchable.class, 1 );
+        MutexService.setupMutexForJob( new MutexServiceParameters()
+                                            .setAsyncClassToRun(MutexTestDummyBatchable.class)
+                                            .setBatchSize(1)
+                                            .setJobName(jobName) );
 
         Test.startTest();
         
@@ -44,7 +49,9 @@ private class MutexTest {
     {
         String jobName = MutexTestDummyBatchable.MUTEX_JOB_ID_DUMMY_BATCH;
 
-        MutexService.setupMutexForJob( jobName, MutexTestDummyBatchable.class, null );
+        MutexService.setupMutexForJob( new MutexServiceParameters()
+                                                .setAsyncClassToRun(MutexTestDummyBatchable.class)
+                                                .setJobName(jobName) );
 
         Test.startTest();
         
@@ -61,8 +68,13 @@ private class MutexTest {
     @isTest
     private static void givenMultipleRecordsUpdateLaunchJobTurnsStatusOFF()
     {
-        MutexService.setupMutexForJob( MutexTestDummyQueueable.MUTEX_JOB_ID_DUMMY_QUEUEABLE, MutexTestDummyQueueable.class);
-        MutexService.setupMutexForJob( MutexTestDummyBatchable.MUTEX_JOB_ID_DUMMY_BATCH, MutexTestDummyBatchable.class, 1 );
+        MutexService.setupMutexForJob( new MutexServiceParameters()
+                                                .setAsyncClassToRun(MutexTestDummyQueueable.class)
+                                                .setJobName(MutexTestDummyQueueable.MUTEX_JOB_ID_DUMMY_QUEUEABLE) );
+        MutexService.setupMutexForJob( new MutexServiceParameters()
+                                                .setAsyncClassToRun(MutexTestDummyBatchable.class)
+                                                .setJobName(MutexTestDummyBatchable.MUTEX_JOB_ID_DUMMY_BATCH)
+                                                .setBatchSize(1) );
 
         Test.startTest();
         
@@ -93,7 +105,7 @@ private class MutexTest {
     {
         Test.startTest();
 
-        MutexService.setupMutexForJob( null, MutexTestDummyQueueable.class);
+        MutexService.setupMutexForJob( new MutexServiceParameters().setAsyncClassToRun(MutexTestDummyQueueable.class) );
 
         Test.stopTest();
 
@@ -153,7 +165,10 @@ private class MutexTest {
     {
         Test.startTest();
 
-        MutexService.setupMutexForJobIfNeeded('HelloWorldMutex', MutexTestDummyBatchable.class, 1);
+        MutexService.setupMutexForJobIfNeeded( new MutexServiceParameters()
+                                                        .setAsyncClassToRun(MutexTestDummyBatchable.class)
+                                                        .setJobName('HelloWorldMutex')
+                                                        .setBatchSize(1));
 
         Test.stopTest();
 
@@ -165,11 +180,17 @@ private class MutexTest {
     {
         String jobName = 'HelloWorldMutex';
 
-        MutexService.setupMutexForJob(jobName, MutexTestDummyBatchable.class, 1);
+        MutexService.setupMutexForJob( new MutexServiceParameters()
+                                            .setAsyncClassToRun(MutexTestDummyBatchable.class)
+                                            .setJobName(jobName)
+                                            .setBatchSize(1));
 
         Test.startTest();
 
-        MutexService.setupMutexForJobIfNeeded(jobName, MutexTestDummyBatchable.class, 1);
+        MutexService.setupMutexForJobIfNeeded(new MutexServiceParameters()
+                                                    .setAsyncClassToRun(MutexTestDummyBatchable.class)
+                                                    .setJobName(jobName)
+                                                    .setBatchSize(1));
 
         Test.stopTest();
 

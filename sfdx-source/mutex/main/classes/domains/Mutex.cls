@@ -1,11 +1,10 @@
 public with sharing class Mutex 
-	// extends ApplicationSObjectDomain
+	extends ApplicationSObjectDomain
 	implements IMutex 
 {
 	public enum STATUS_CODES { ACTIVE, INACTIVE }
 
 	private static final Integer DEFAULT_BATCH_CHUNK_SIZE = 25;
-	private List<Mutex__c> records = new List<Mutex__c>();
 
 	public static IMutex newInstance(List<Mutex__c> records) 
     {
@@ -14,28 +13,18 @@ public with sharing class Mutex
 
 	public Mutex(List<Mutex__c> sObjectList) 
 	{
-		// super(sObjectList);
-		this.records = sObjectList == null ? new List<Mutex__c>() : sObjectList;
+		super(sObjectList);
 	}
 
-	public static void triggerHandler()
+	public class Constructor implements fflib_SObjectDomain.IConstructable 
 	{
-		if ( Trigger.isAfter && Trigger.isUpdate ) 
+		public fflib_SObjectDomain construct(List<sObject> sObjectList) 
 		{
-			new Mutex( Trigger.new ).onAfterUpdate( Trigger.oldMap );
+			return new Mutex(sObjectList);
 		}
 	}
 
-	// public class Constructor implements fflib_SObjectDomain.IConstructable 
-	// {
-	// 	public fflib_SObjectDomain construct(List<sObject> sObjectList) 
-	// 	{
-	// 		return new Mutex(sObjectList);
-	// 	}
-	// }
-
-	//public override void onAfterUpdate(Map<Id,SObject> existingRecords) // version to use when enabled for fflib/at4dx
-	public void onAfterUpdate(Map<Id,SObject> existingRecords)
+	public override void onAfterUpdate(Map<Id,SObject> existingRecords)
 	{
 		launchJob(existingRecords);
 	}
@@ -45,7 +34,7 @@ public with sharing class Mutex
 	{
 		if ( String.isNotBlank(jobName) )
 		{
-			for ( Mutex__c mutexRecord : records )
+			for ( Mutex__c mutexRecord : (List<Mutex__c>) this.records )
 			{
 				if (jobName.equalsIgnoreCase(mutexRecord.JobId__c))
 				{
@@ -57,23 +46,33 @@ public with sharing class Mutex
 		return null;
 	}
 
-	public void turnMutexOn( String jobName, fflib_ISObjectUnitOfWork uow )
+	public void turnMutexOn( String jobName, IApplicationSObjectUnitOfWork uow )
 	{
 		Mutex__c mutexRecord = findMutexByJobName(jobName);
 
 		if ( mutexRecord != null )
 		{
+			System.debug('Turning MUTEX on for jobName: \'' + jobName + '\' (Mutex__c.Id: ' + mutexRecord.Id + ')');
 			uow.registerDirty( switchOn( mutexRecord ) );
+		}
+		else 
+		{
+			System.debug('Request for MUTEX to turn on jobName: \'' + jobName + '\' was not successful.  No MUTEX job found with that name.');	
 		}
 	}
 
-    public void turnMutexOff( String jobName, fflib_ISObjectUnitOfWork uow )
+    public void turnMutexOff( String jobName, IApplicationSObjectUnitOfWork uow )
 	{
 		Mutex__c mutexRecord = findMutexByJobName(jobName);
 
 		if ( mutexRecord != null )
 		{
+			System.debug('Turning MUTEX off for jobName: \'' + jobName + '\' (Mutex__c.Id: ' + mutexRecord.Id + ')');
 			uow.registerDirty( switchOff( mutexRecord ) );
+		}
+		else 
+		{
+			System.debug('Request for MUTEX to turn off jobName: \'' + jobName + '\' was not successful.  No MUTEX job found with that name.');	
 		}
 	}
 
@@ -98,16 +97,16 @@ public with sharing class Mutex
 
 		if (records != Null) 
 		{
-			fflib_ISObjectUnitOfWork uowMutex = new fflib_SObjectUnitOfWork(new List<Schema.SObjectType> { Mutex__c.sObjectType });
+			IApplicationSObjectUnitOfWork uowMutex = new ApplicationSObjectUnitOfWork(new List<Schema.SObjectType> { Mutex__c.sObjectType });
 
 			Boolean batchExecutionHasFailed = false;
 
-			for (Mutex__c rec : (List<Mutex__c>) records) 
+			for (Mutex__c rec : (List<Mutex__c>) this.records) 
 			{
 				oldRec = (Mutex__c) oldRecMap.get(rec.Id);
 
-				// system.debug('newRec:'+rec.JobStatus__c);
-				// system.debug('oldRec:'+oldRec.JobStatus__c);
+				System.debug('rec.JobStatus__c: ' + rec.JobStatus__c);
+				System.debug('oldRec.JobStatus__c: ' + oldRec.JobStatus__c);
 			
 				if (rec.JobStatus__c != oldRec.JobStatus__c 
 					&& String.isNotBlank(rec.AsyncClassName__c)
@@ -118,19 +117,29 @@ public with sharing class Mutex
 					if ( classType.newInstance() instanceof Queueable & ! System.isQueueable() )
 					{
 						Queueable queueableInstance = (Queueable)classType.newInstance();
+
+						if ( queueableInstance instanceOf IMutexParameterable )
+						{
+							((IMutexParameterable)queueableInstance).setSerializedParameter(rec.ParametersSerialized__c);
+						}
+
 						System.enqueueJob(queueableInstance);
 					} 
 					else if (classType.newInstance() instanceof Database.Batchable<sObject>) 
 					{
-						Database.Batchable<sObject> batchName = (Database.Batchable<sObject>)classType.newInstance();
+						Database.Batchable<sObject> batchInstance = (Database.Batchable<sObject>)classType.newInstance();
 
-						String jobID = Database.executeBatch( batchName, rec.BatchSize__c == null ? DEFAULT_BATCH_CHUNK_SIZE : rec.BatchSize__c.intValue());
+						if ( batchInstance instanceOf IMutexParameterable )
+						{
+							((IMutexParameterable)batchInstance).setSerializedParameter(rec.ParametersSerialized__c);
+						}
+
+						String jobID = Database.executeBatch( batchInstance, rec.BatchSize__c == null ? DEFAULT_BATCH_CHUNK_SIZE : rec.BatchSize__c.intValue());
 					
 						//exception loging for flex queue locking
 						if ( jobID.startsWith('000') ) //000xxxxxxxxxxxx should be returned when Batch job fails to acquire lock.
 						{ 
-							//resetting the Mutex flag to OFF
-												
+							//resetting the Mutex flag to OFF												
 							uowMutex.registerDirty( switchOff( rec ) );
 							batchExecutionHasFailed = true;
 						}
