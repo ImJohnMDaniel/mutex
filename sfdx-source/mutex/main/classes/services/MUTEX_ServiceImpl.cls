@@ -1,5 +1,5 @@
-public inherited sharing class MutexServiceImpl
-    implements IMutexService
+public inherited sharing class MUTEX_ServiceImpl
+    implements MUTEX_IService
 {
     public void turnMutexOn(String jobName)
     {
@@ -10,7 +10,7 @@ public inherited sharing class MutexServiceImpl
 
         IApplicationSObjectUnitOfWork uow = new ApplicationSObjectUnitOfWork(new List<Schema.SObjectType> { Mutex__c.sObjectType });
 
-        IMutex mutexDomain = Mutex.newInstance( selectByJobName( new List<String>{ jobName }) );
+        MUTEX_IDomain mutexDomain = MUTEX_Domain.newInstance( selectByJobName( new List<String>{ jobName }) );
 
         mutexDomain.turnMutexOn(jobName, uow);
 
@@ -26,14 +26,14 @@ public inherited sharing class MutexServiceImpl
 
         IApplicationSObjectUnitOfWork uow = new ApplicationSObjectUnitOfWork(new List<Schema.SObjectType> { Mutex__c.sObjectType });
 
-        IMutex mutexDomain = Mutex.newInstance( selectByJobName( new List<String>{ jobName }) );
+        MUTEX_IDomain mutexDomain = MUTEX_Domain.newInstance( selectByJobName( new List<String>{ jobName }) );
 
         mutexDomain.turnMutexOff(jobName, uow);
 
         uow.commitWork();
     }
 
-    public void setupMutexForJob( MutexServiceParameters params )
+    public void setupMutexForJob( MUTEX_ServiceParameters params )
     {
         if ( String.isBlank(params.jobName) || params.asyncClassToRun == null )
         {
@@ -46,7 +46,7 @@ public inherited sharing class MutexServiceImpl
 
         rec.AsyncClassName__c = params.asyncClassToRun.getName();
         rec.JobId__c = params.jobName;
-        rec.JobStatus__c = Mutex.STATUS_CODES.INACTIVE.name();
+        rec.JobStatus__c = MUTEX_Domain.STATUS_CODES.INACTIVE.name();
 
         if (params.batchSize != null)
         {
@@ -63,7 +63,7 @@ public inherited sharing class MutexServiceImpl
         uow.commitWork();
     }
 
-    public void setupMutexForJobIfNeeded( MutexServiceParameters params )
+    public void setupMutexForJobIfNeeded( MUTEX_ServiceParameters params )
     {
         if (selectByJobName(new List<String>{params.jobName}).isEmpty())
         {

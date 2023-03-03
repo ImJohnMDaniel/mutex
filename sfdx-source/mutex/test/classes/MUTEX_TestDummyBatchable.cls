@@ -1,4 +1,4 @@
-public with sharing class MutexTestDummyBatchable 
+public with sharing class MUTEX_TestDummyBatchable 
     implements Database.Batchable<sObject>
 {
     public static final String MUTEX_JOB_ID_DUMMY_BATCH = 'UnitTestDummyBatch';
@@ -7,8 +7,8 @@ public with sharing class MutexTestDummyBatchable
     {
         String query = 'select id, ' + Mutex__c.AsyncClassName__c + ', ' + Mutex__c.JobStatus__c 
                         + ' from ' + Mutex__c.SObjectType 
-                        + ' where ' + Mutex__c.AsyncClassName__c + ' = \'' + MutexTestDummyBatchable.class + '\'';
-        System.debug('MutexTestDummyBatchable query = ' + query);
+                        + ' where ' + Mutex__c.AsyncClassName__c + ' = \'' + MUTEX_TestDummyBatchable.class + '\'';
+        System.debug('MUTEX_TestDummyBatchable query = ' + query);
         return Database.getQueryLocator( query );
     }
     
@@ -25,8 +25,8 @@ public with sharing class MutexTestDummyBatchable
     {
         // Query here to see if there are other records to process
         // If there are still records to process, then execute...
-            // MutexService.turnMutexOn( MUTEX_JOB_ID_DUMMY_BATCH );
+            // MUTEX_Service.turnMutexOn( MUTEX_JOB_ID_DUMMY_BATCH );
         // otherwise
-            MutexService.turnMutexOff( MUTEX_JOB_ID_DUMMY_BATCH );
+            MUTEX_Service.turnMutexOff( MUTEX_JOB_ID_DUMMY_BATCH );
     }
 }

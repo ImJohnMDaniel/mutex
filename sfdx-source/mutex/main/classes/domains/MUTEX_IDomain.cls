@@ -1,5 +1,5 @@
 // TODO : Prefix all Mutex related work with MUTEX_
-public interface IMutex 
+public interface MUTEX_IDomain 
     extends IApplicationSObjectDomain
 {
     void turnMutexOn( String jobName, IApplicationSObjectUnitOfWork uow );

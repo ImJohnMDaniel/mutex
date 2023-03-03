@@ -1,17 +1,17 @@
-public with sharing class Mutex 
+public with sharing class MUTEX_Domain 
 	extends ApplicationSObjectDomain
-	implements IMutex 
+	implements MUTEX_IDomain 
 {
 	public enum STATUS_CODES { ACTIVE, INACTIVE }
 
 	private static final Integer DEFAULT_BATCH_CHUNK_SIZE = 25;
 
-	public static IMutex newInstance(List<Mutex__c> records) 
+	public static MUTEX_IDomain newInstance(List<Mutex__c> records) 
     {
-        return (IMutex) new Mutex(records);
+        return (MUTEX_IDomain) new MUTEX_Domain(records);
     }
 
-	public Mutex(List<Mutex__c> sObjectList) 
+	public MUTEX_Domain(List<Mutex__c> sObjectList) 
 	{
 		super(sObjectList);
 	}
@@ -20,7 +20,7 @@ public with sharing class Mutex
 	{
 		public fflib_SObjectDomain construct(List<sObject> sObjectList) 
 		{
-			return new Mutex(sObjectList);
+			return new MUTEX_Domain(sObjectList);
 		}
 	}
 
@@ -114,13 +114,17 @@ public with sharing class Mutex
 				{
 					Type classType = Type.forName( rec.AsyncClassName__c );
 				
+					if ( classType == null )
+					{
+						continue;
+					}
 					if ( classType.newInstance() instanceof Queueable & ! System.isQueueable() )
 					{
 						Queueable queueableInstance = (Queueable)classType.newInstance();
 
-						if ( queueableInstance instanceOf IMutexParameterable )
+						if ( queueableInstance instanceOf MUTEX_IParameterable )
 						{
-							((IMutexParameterable)queueableInstance).setSerializedParameter(rec.ParametersSerialized__c);
+							((MUTEX_IParameterable)queueableInstance).setSerializedParameter(rec.ParametersSerialized__c);
 						}
 
 						System.enqueueJob(queueableInstance);
@@ -129,9 +133,9 @@ public with sharing class Mutex
 					{
 						Database.Batchable<sObject> batchInstance = (Database.Batchable<sObject>)classType.newInstance();
 
-						if ( batchInstance instanceOf IMutexParameterable )
+						if ( batchInstance instanceOf MUTEX_IParameterable )
 						{
-							((IMutexParameterable)batchInstance).setSerializedParameter(rec.ParametersSerialized__c);
+							((MUTEX_IParameterable)batchInstance).setSerializedParameter(rec.ParametersSerialized__c);
 						}
 
 						String jobID = Database.executeBatch( batchInstance, rec.BatchSize__c == null ? DEFAULT_BATCH_CHUNK_SIZE : rec.BatchSize__c.intValue());

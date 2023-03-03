@@ -1,4 +1,4 @@
-public interface IMutexParameterable 
+public interface MUTEX_IParameterable 
 {
     void setSerializedParameter(String parametersSerialized);
 }

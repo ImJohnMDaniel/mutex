@@ -1,8 +1,8 @@
-public inherited sharing class MutexService 
+public inherited sharing class MUTEX_Service 
 {
-    private static IMutexService service()
+    private static MUTEX_IService service()
     {
-        return (IMutexService) Application.Service.newInstance(IMutexService.class);
+        return (MUTEX_IService) Application.Service.newInstance(MUTEX_IService.class);
     }
 
     public static void turnMutexOn(String jobName)
@@ -15,12 +15,12 @@ public inherited sharing class MutexService
         service().turnMutexOff(jobName);
     }
 
-    public static void setupMutexForJob( MutexServiceParameters params )
+    public static void setupMutexForJob( MUTEX_ServiceParameters params )
     {
         service().setupMutexForJob(params);
     }
 
-    public static void setupMutexForJobIfNeeded( MutexServiceParameters params )
+    public static void setupMutexForJobIfNeeded( MUTEX_ServiceParameters params )
     {
         service().setupMutexForJobIfNeeded(params);
     }
